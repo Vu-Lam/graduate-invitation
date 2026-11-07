@@ -1378,7 +1378,7 @@ img {
   line-height: 1.05;
   font-weight: 800;
   letter-spacing: -0.02em;
-  text-wrap: balance;
+  white-space: nowrap;
 }
 .xcard__rule {
   width: 96px;
