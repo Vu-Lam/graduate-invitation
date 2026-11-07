@@ -35,7 +35,7 @@ export default function Admin() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch(`${config.siteUrl}/api/admin/guests`, {
+      const res = await fetch(`${config.apiUrl}/api/admin/guests`, {
         headers: { Authorization: `Bearer ${authToken}` }
       });
       if (!res.ok) {
@@ -57,7 +57,7 @@ export default function Admin() {
     setAdding(true);
 
     try {
-      const res = await fetch(`${config.siteUrl}/api/admin/guests`, {
+      const res = await fetch(`${config.apiUrl}/api/admin/guests`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +91,7 @@ export default function Admin() {
   const handleEditSave = async (id) => {
     setEditError('');
     try {
-      const res = await fetch(`${config.siteUrl}/api/admin/guests/${id}`, {
+      const res = await fetch(`${config.apiUrl}/api/admin/guests/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -117,7 +117,7 @@ export default function Admin() {
     if (!confirm('Bạn chắc chắn xóa khách này?')) return;
     setDeleting(id);
     try {
-      const res = await fetch(`${config.siteUrl}/api/admin/guests/${id}`, {
+      const res = await fetch(`${config.apiUrl}/api/admin/guests/${id}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });
