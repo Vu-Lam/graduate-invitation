@@ -8,6 +8,7 @@ function copyToClipboard(text) {
 
 export default function Admin() {
   const [token, setToken] = useState('');
+  const [showToken, setShowToken] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [guests, setGuests] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -150,18 +151,39 @@ export default function Admin() {
         <div style={{ maxWidth: '400px', width: '100%' }}>
           <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>Admin</h1>
           <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <input
-              type="password"
-              placeholder="Nhập admin token"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              style={{
-                padding: '12px',
-                borderRadius: '8px',
-                border: 'none',
-                fontSize: '16px'
-              }}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                type={showToken ? 'text' : 'password'}
+                placeholder="Nhập admin token"
+                value={token}
+                onChange={(e) => setToken(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '12px 40px 12px 12px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  fontSize: '16px',
+                  boxSizing: 'border-box'
+                }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowToken(!showToken)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: '18px',
+                  color: '#666'
+                }}
+              >
+                {showToken ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
             {error && (
               <div
                 style={{
