@@ -49,5 +49,5 @@ export const config = {
   siteUrl: import.meta.env.VITE_SITE_URL || window.location.origin,
 
   // Địa chỉ backend API
-  apiUrl: import.meta.env.VITE_API_URL || ''
+  apiUrl: ''
 };
