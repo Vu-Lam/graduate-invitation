@@ -24,7 +24,10 @@ const InviteCard = forwardRef(function InviteCard({ guest, qr, link }, ref) {
 
         <div className="xcard__main">
           <div className="xcard__lead">Trân trọng kính mời</div>
-          <div className="display xcard__guest">
+          <div
+  className="display xcard__guest"
+  style={{ fontSize: Math.max(40, Math.min(78, Math.floor(1500 / `${guest.honorific} ${guest.name}`.length))) }}
+>
             {guest.honorific} {guest.name}
           </div>
           <div className="xcard__rule" />
