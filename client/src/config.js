@@ -46,7 +46,7 @@ export const config = {
   },
 
   // Địa chỉ web dùng để tạo mã QR trên ảnh thiệp. Mặc định lấy theo tên miền đang chạy.
-  siteUrl: import.meta.env.VITE_SITE_URL || window.location.origin,
+  siteUrl: window.location.origin,
 
   // Địa chỉ backend API
   apiUrl: ''
