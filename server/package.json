@@ -1,0 +1,21 @@
+{
+  "name": "thiep-moi-server",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js",
+    "seed": "node scripts/seed.js",
+    "guests": "node scripts/guests.js",
+    "wish": "node scripts/wish.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1",
+    "express-rate-limit": "^7.4.1",
+    "helmet": "^8.0.0",
+    "mongoose": "^8.8.0",
+    "zod": "^3.23.8"
+  }
+}
