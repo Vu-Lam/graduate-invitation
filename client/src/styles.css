@@ -1274,12 +1274,16 @@ img {
   left: -20000px;
   top: 0;
   pointer-events: none;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 .xcard {
   position: relative;
   overflow: hidden;
   width: 1080px;
   height: 1350px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
   color: #fff;
   background: linear-gradient(165deg, var(--bg1) 0%, var(--bg2) 55%, var(--bg1) 100%);
 }
