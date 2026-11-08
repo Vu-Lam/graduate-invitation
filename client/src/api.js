@@ -22,5 +22,8 @@ export const api = {
   getGuest: (slug) => request(`/guests/${encodeURIComponent(slug)}`),
   sendRsvp: (slug, body) =>
     request(`/guests/${encodeURIComponent(slug)}/rsvp`, { method: 'PUT', body: JSON.stringify(body) }),
-  getWishes: () => request('/wishes')
+  getWishes: (slug) => {
+    const url = slug ? `/wishes?slug=${encodeURIComponent(slug)}` : '/wishes';
+    return request(url);
+  }
 };

@@ -91,21 +91,60 @@ router.put('/guests/:slug/rsvp', rsvpLimiter, async (req, res, next) => {
   }
 });
 
+const ANONYMOUS_NAMES = [
+  'Mèo thần tài',
+  'Kỳ lân ham ăn',
+  'Rồng biếu tiền',
+  'Bà Ngoại yêu dấu',
+  'Thỏ con vui tính',
+  'Chuột đêm thánh thót',
+  'Rùa già hiền',
+  'Chim bồ câu bình yên',
+  'Chó cưng loyal',
+  'Hổ ơi hổ',
+  'Sư tử bạo chúa',
+  'Cáo tinh quỷ',
+  'Nai hươu nhẹ nhàng',
+  'Cua cương trực',
+  'Cá vàng lặng lẽ',
+  'Cào cào bao hết',
+  'Ốc sên chậm chạp',
+  'Chim đại bàng thần',
+  'Gấu trúc hiền lành',
+  'Lạc đà sa mạc'
+];
+
+function getAnonymousName(guestId) {
+  const seed = parseInt(guestId.slice(-8), 16);
+  return ANONYMOUS_NAMES[seed % ANONYMOUS_NAMES.length];
+}
+
 // Sổ lưu bút: chỉ các lời chúc đã duyệt
 router.get('/wishes', async (req, res, next) => {
   try {
     if (process.env.GUESTBOOK_ENABLED !== 'true') return res.json({ enabled: false, items: [] });
+    const currentSlug = req.query.slug || null;
+
     const rows = await Guest.find({ wishVisible: true, 'rsvp.wish': { $ne: '' } })
-      .select('name honorific rsvp.wish rsvp.respondedAt')
+      .select('slug name honorific _id rsvp.wish rsvp.respondedAt')
       .sort({ 'rsvp.respondedAt': -1 })
       .limit(100)
       .lean();
-    const items = rows.map((g) => ({
-      id: String(g._id),
-      from: `${g.honorific} ${g.name}`.trim(),
-      wish: g.rsvp.wish,
-      at: g.rsvp.respondedAt
-    }));
+
+    const items = rows.map((g) => {
+      const isOwnWish = currentSlug && g.slug === currentSlug;
+      const from = isOwnWish
+        ? `${g.honorific} ${g.name}`.trim()
+        : getAnonymousName(String(g._id));
+
+      return {
+        id: String(g._id),
+        from,
+        wish: g.rsvp.wish,
+        at: g.rsvp.respondedAt,
+        isOwn: isOwnWish
+      };
+    });
     return res.json({ enabled: true, items });
   } catch (err) {
     return next(err);

@@ -16,19 +16,19 @@ function Ghost({ lines, tall }) {
 }
 
 // Bật bằng GUESTBOOK_ENABLED=true ở server. Chưa bật thì hiện khung "Sắp ra mắt".
-export default function Guestbook() {
+export default function Guestbook({ slug }) {
   const [state, setState] = useState({ loading: true, enabled: false, items: [] });
 
   useEffect(() => {
     let alive = true;
     api
-      .getWishes()
+      .getWishes(slug)
       .then((data) => alive && setState({ loading: false, enabled: data.enabled, items: data.items }))
       .catch(() => alive && setState({ loading: false, enabled: false, items: [] }));
     return () => {
       alive = false;
     };
-  }, []);
+  }, [slug]);
 
   if (state.loading) return null;
 
@@ -45,9 +45,11 @@ export default function Guestbook() {
       {state.enabled && state.items.length > 0 && (
         <div className="wishes">
           {state.items.map((w) => (
-            <figure key={w.id} className="glass wish">
-              <blockquote>“{w.wish}”</blockquote>
-              <figcaption>{w.from}</figcaption>
+            <figure key={w.id} className={`glass wish${w.isOwn ? ' wish--own' : ''}`}>
+              <blockquote>”{w.wish}”</blockquote>
+              <div className="wish__tag">
+                <figcaption>{w.from}</figcaption>
+              </div>
             </figure>
           ))}
         </div>
