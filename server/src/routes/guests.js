@@ -164,7 +164,7 @@ function requireAdmin(req, res, next) {
 router.get('/admin/guests', requireAdmin, async (req, res, next) => {
   try {
     const guests = await Guest.find()
-      .select('slug name honorific group rsvp.status visits lastVisitAt createdAt')
+      .select('slug name honorific group rsvp.status rsvp.wish wishVisible visits lastVisitAt createdAt')
       .sort({ createdAt: -1 })
       .lean();
     const items = guests.map((g) => ({
@@ -174,6 +174,8 @@ router.get('/admin/guests', requireAdmin, async (req, res, next) => {
       honorific: g.honorific,
       group: g.group,
       rsvpStatus: g.rsvp?.status ?? null,
+      wish: g.rsvp?.wish ?? '',
+      wishVisible: Boolean(g.wishVisible),
       visits: g.visits,
       lastVisitAt: g.lastVisitAt,
       createdAt: g.createdAt
@@ -248,10 +250,30 @@ router.put('/admin/guests/:id', requireAdmin, async (req, res, next) => {
       honorific: guest.honorific,
       group: guest.group,
       rsvpStatus: guest.rsvp?.status ?? null,
+      wish: guest.rsvp?.wish ?? '',
+      wishVisible: Boolean(guest.wishVisible),
       visits: guest.visits,
       lastVisitAt: guest.lastVisitAt,
       createdAt: guest.createdAt
     });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Admin: Duyệt (hiện) hoặc ẩn lời chúc trên sổ lưu bút
+router.put('/admin/guests/:id/wish-visible', requireAdmin, async (req, res, next) => {
+  try {
+    if (typeof req.body?.visible !== 'boolean') {
+      return res.status(400).json({ error: 'Thiếu trạng thái hiện/ẩn.' });
+    }
+    const guest = await Guest.findByIdAndUpdate(
+      req.params.id,
+      { wishVisible: req.body.visible },
+      { new: true }
+    ).lean();
+    if (!guest) return res.status(404).json({ error: 'Không tìm thấy khách.' });
+    return res.json({ id: String(guest._id), wishVisible: Boolean(guest.wishVisible) });
   } catch (err) {
     return next(err);
   }

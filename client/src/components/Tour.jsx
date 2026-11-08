@@ -1,4 +1,6 @@
 import Icon from './Icon.jsx';
+import Compass3D from './Compass3D.jsx';
+import MagnifyText from './MagnifyText.jsx';
 import { config } from '../config.js';
 
 export default function Tour() {
@@ -23,16 +25,10 @@ export default function Tour() {
             <img src={tour.preview} alt="" />
           ) : (
             <div className="tour__placeholder">
-              <svg aria-hidden="true" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M16.2 7.8l-2 6.3-6.3 2 2-6.3z" />
-              </svg>
-              <span>Tham quan Bách Khoa 360°</span>
+              <Compass3D />
+              <MagnifyText text="Tham quan Bách Khoa 360°" />
             </div>
           )}
-          <span className="hotspot" style={{ left: '22%', top: '64%' }} />
-          <span className="hotspot" style={{ left: '68%', top: '38%', animationDelay: '.6s' }} />
-          <span className="hotspot" style={{ left: '46%', top: '78%', animationDelay: '1.2s' }} />
         </a>
       </div>
     </section>

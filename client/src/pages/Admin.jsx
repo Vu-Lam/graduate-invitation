@@ -2,12 +2,31 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { config } from '../config.js';
 
+const TOKEN_KEY = 'admin-token';
+
+function readSavedToken() {
+  try {
+    return sessionStorage.getItem(TOKEN_KEY) || '';
+  } catch {
+    return '';
+  }
+}
+
+function saveToken(value) {
+  try {
+    if (value) sessionStorage.setItem(TOKEN_KEY, value);
+    else sessionStorage.removeItem(TOKEN_KEY);
+  } catch {
+    /* trình duyệt chặn storage: bỏ qua, chỉ phải nhập lại token */
+  }
+}
+
 function copyToClipboard(text) {
   navigator.clipboard.writeText(text);
 }
 
 export default function Admin() {
-  const [token, setToken] = useState('');
+  const [token, setToken] = useState(readSavedToken);
   const [showToken, setShowToken] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [guests, setGuests] = useState([]);
@@ -21,6 +40,7 @@ export default function Admin() {
   const [editData, setEditData] = useState({ name: '', honorific: 'bạn', group: '' });
   const [editError, setEditError] = useState('');
   const [deleting, setDeleting] = useState(null);
+  const [togglingWish, setTogglingWish] = useState(null);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -29,6 +49,13 @@ export default function Admin() {
       setError('');
       loadGuests(token);
     }
+  };
+
+  const handleLogout = () => {
+    saveToken('');
+    setToken('');
+    setGuests([]);
+    setAuthenticated(false);
   };
 
   const loadGuests = async (authToken) => {
@@ -43,13 +70,27 @@ export default function Admin() {
       }
       const data = await res.json();
       setGuests(data.items);
+      saveToken(authToken);
     } catch (err) {
+      if (err.message === 'Token không đúng.') {
+        saveToken('');
+        setToken('');
+      }
       setError(err.message);
       setAuthenticated(false);
     } finally {
       setLoading(false);
     }
   };
+
+  // Đã có token trong session thì vào thẳng, khỏi nhập lại
+  useEffect(() => {
+    if (token) {
+      setAuthenticated(true);
+      loadGuests(token);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleAddGuest = async (e) => {
     e.preventDefault();
@@ -110,6 +151,32 @@ export default function Admin() {
       setEditingId(null);
     } catch (err) {
       setEditError(err.message);
+    }
+  };
+
+  const handleToggleWish = async (guest) => {
+    const visible = !guest.wishVisible;
+    setTogglingWish(guest.id);
+    try {
+      const res = await fetch(`${config.apiUrl}/api/admin/guests/${guest.id}/wish-visible`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ visible })
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Lỗi cập nhật lời chúc.');
+      }
+
+      setGuests((list) => list.map((g) => (g.id === guest.id ? { ...g, wishVisible: visible } : g)));
+    } catch (err) {
+      alert('Lỗi: ' + err.message);
+    } finally {
+      setTogglingWish(null);
     }
   };
 
@@ -230,20 +297,38 @@ export default function Admin() {
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
           <h1>Quản lý khách mời</h1>
-          <button
-            onClick={() => setAuthenticated(false)}
-            style={{
-              padding: '10px 20px',
-              borderRadius: '6px',
-              border: 'none',
-              background: 'rgba(255, 255, 255, 0.2)',
-              color: '#fff',
-              cursor: 'pointer',
-              fontSize: '14px'
-            }}
-          >
-            Đăng xuất
-          </button>
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <button
+              onClick={() => loadGuests(token)}
+              disabled={loading}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                background: 'transparent',
+                color: '#fff',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                opacity: loading ? 0.6 : 1,
+                fontSize: '14px'
+              }}
+            >
+              {loading ? 'Đang tải...' : '↻ Làm mới'}
+            </button>
+            <button
+              onClick={handleLogout}
+              style={{
+                padding: '10px 20px',
+                borderRadius: '6px',
+                border: 'none',
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: '#fff',
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              Đăng xuất
+            </button>
+          </div>
         </div>
 
         <button
@@ -420,6 +505,7 @@ export default function Admin() {
                   <th style={{ padding: '12px', textAlign: 'left' }}>Xưng hô</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Nhóm</th>
                   <th style={{ padding: '12px', textAlign: 'center' }}>RSVP</th>
+                  <th style={{ padding: '12px', textAlign: 'left', minWidth: '240px' }}>Lời chúc</th>
                   <th style={{ padding: '12px', textAlign: 'center' }}>Lượt mở</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Thao tác</th>
                 </tr>
@@ -490,6 +576,32 @@ export default function Admin() {
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center', color: guest.rsvpStatus ? '#3fd1b0' : 'rgba(255, 255, 255, 0.6)' }}>
                       {guest.rsvpStatus ? guest.rsvpStatus.toUpperCase() : '—'}
+                    </td>
+                    <td style={{ padding: '12px', verticalAlign: 'top' }}>
+                      {guest.wish ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', alignItems: 'flex-start' }}>
+                          <div style={{ maxWidth: '320px', lineHeight: 1.5, overflowWrap: 'anywhere' }}>{guest.wish}</div>
+                          <button
+                            onClick={() => handleToggleWish(guest)}
+                            disabled={togglingWish === guest.id}
+                            style={{
+                              padding: '5px 12px',
+                              borderRadius: '999px',
+                              border: guest.wishVisible ? 'none' : '1px solid rgba(255, 255, 255, 0.4)',
+                              background: guest.wishVisible ? '#3fd1b0' : 'transparent',
+                              color: guest.wishVisible ? '#031a63' : '#fff',
+                              cursor: togglingWish === guest.id ? 'not-allowed' : 'pointer',
+                              opacity: togglingWish === guest.id ? 0.6 : 1,
+                              fontSize: '12px',
+                              fontWeight: '600'
+                            }}
+                          >
+                            {guest.wishVisible ? '✓ Đang hiện · bấm để ẩn' : 'Đang ẩn · bấm để hiện'}
+                          </button>
+                        </div>
+                      ) : (
+                        <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>—</span>
+                      )}
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center' }}>{guest.visits}</td>
                     <td style={{ padding: '12px', display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
@@ -583,7 +695,8 @@ export default function Admin() {
         )}
 
         <div style={{ marginTop: '40px', paddingTop: '20px', borderTop: '1px solid rgba(255, 255, 255, 0.2)', fontSize: '14px', color: 'rgba(255, 255, 255, 0.7)' }}>
-          Tổng cộng: {guests.length} khách
+          Tổng cộng: {guests.length} khách · Lời chúc: {guests.filter((g) => g.wish && g.wishVisible).length} đang hiện,{' '}
+          {guests.filter((g) => g.wish && !g.wishVisible).length} đang ẩn
         </div>
       </div>
     </div>

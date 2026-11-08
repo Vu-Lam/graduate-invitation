@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
+import WishSky from './WishSky.jsx';
 
 function Ghost({ lines, tall }) {
   return (
@@ -40,20 +41,12 @@ export default function Guestbook({ slug }) {
           <h2 className="display h2">Lời chúc từ mọi người</h2>
         </div>
         {!state.enabled && <div className="glass badge">SẮP RA MẮT</div>}
+        {state.enabled && state.items.length > 0 && (
+          <div className="glass badge">✦ {state.items.length} NGÔI SAO</div>
+        )}
       </div>
 
-      {state.enabled && state.items.length > 0 && (
-        <div className="wishes">
-          {state.items.map((w) => (
-            <figure key={w.id} className={`glass wish${w.isOwn ? ' wish--own' : ''}`}>
-              <blockquote>”{w.wish}”</blockquote>
-              <div className="wish__tag">
-                <figcaption>{w.from}</figcaption>
-              </div>
-            </figure>
-          ))}
-        </div>
-      )}
+      {state.enabled && state.items.length > 0 && <WishSky items={state.items} />}
 
       {state.enabled && state.items.length === 0 && (
         <div className="glass ghost ghost--empty">Chưa có lời chúc nào được hiển thị. Hãy là người đầu tiên!</div>
