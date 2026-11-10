@@ -2061,3 +2061,503 @@ img {
     transition: opacity 0.2s;
   }
 }
+
+
+/* ---------- Vườn sen dưới trăng (theme Phật pháp, dùng chung khung với bầu trời) ---------- */
+.sky__defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+  overflow: hidden;
+}
+.sky--lotus .sky__view {
+  border-color: color-mix(in srgb, var(--tint) 32%, transparent);
+  background:
+    radial-gradient(ellipse 80% 30% at 50% 0%, color-mix(in srgb, var(--s) 16%, transparent), transparent 75%),
+    radial-gradient(ellipse 70% 45% at 88% 100%, color-mix(in srgb, var(--bg2) 30%, transparent), transparent 70%),
+    radial-gradient(ellipse 55% 40% at 8% 92%, rgba(255, 158, 194, 0.1), transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--bg1) 52%, #130a26) 0%, color-mix(in srgb, var(--bg1) 70%, #06030e) 100%);
+}
+.sky--lotus .sky__dust i {
+  background: var(--tint);
+}
+.sky--lotus .sky__dust {
+  opacity: 0.5;
+}
+
+/* Dòng nước trôi chậm (nằm trong lớp parallax) */
+.pond__currents {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.pond__currents g {
+  animation: pond-drift 30s ease-in-out infinite alternate;
+}
+.pond__currents path {
+  fill: none;
+  stroke: var(--tint);
+  stroke-opacity: 0.1;
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+}
+@keyframes pond-drift {
+  to {
+    transform: translateX(-40px);
+  }
+}
+
+/* ---- Bọt nước + sóng khi một đóa sen nở ---- */
+.pond__splash {
+  position: absolute;
+  z-index: 3;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+}
+.pond__splash::before {
+  content: '';
+  position: absolute;
+  left: -22px;
+  top: -9px;
+  width: 44px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(255, 248, 230, 0.75), transparent);
+  opacity: 0;
+  animation: pond-flash 0.6s ease-out both;
+}
+@keyframes pond-flash {
+  0% {
+    opacity: 0.9;
+    transform: scale(0.3);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}
+/* Vòng sóng: elip dẹt, có rãnh tối + gờ sáng như sóng thật; tốc độ khớp với RIPPLE_SPEED */
+.pond__ripple i {
+  --o: 1;
+  position: absolute;
+  left: -300px;
+  top: -150px;
+  width: 600px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    transparent 82%,
+    rgba(0, 0, 0, 0.18) 88%,
+    color-mix(in srgb, var(--tint) 42%, transparent) 94%,
+    rgba(255, 250, 235, 0.1) 97%,
+    transparent 100%
+  );
+  opacity: 0;
+  transform: scale(0.03);
+  animation: pond-ring 1.4s linear both;
+}
+.pond__ripple i:nth-child(2) {
+  --o: 0.65;
+  animation-delay: 0.22s;
+}
+.pond__ripple i:nth-child(3) {
+  --o: 0.4;
+  animation-delay: 0.44s;
+}
+.pond__ripple i:nth-child(4) {
+  --o: 0.22;
+  animation-delay: 0.66s;
+}
+@keyframes pond-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.03);
+  }
+  8% {
+    opacity: var(--o);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+/* Giọt nước: lớp ngoài trượt trên mặt nước, lớp trong bay lên rồi rơi xuống, chạm nước thì gợn vòng nhỏ */
+.pond__drop {
+  position: absolute;
+  left: 0;
+  top: 0;
+  animation: drop-x var(--t) linear both;
+}
+@keyframes drop-x {
+  from {
+    transform: translate(0, 0);
+  }
+  to {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+.pond__drop i {
+  position: absolute;
+  left: calc(var(--s) / -2);
+  top: calc(var(--s) / -2);
+  width: var(--s);
+  height: var(--s);
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff, color-mix(in srgb, var(--tint) 70%, #fff));
+  box-shadow: 0 0 6px color-mix(in srgb, var(--tint) 80%, transparent);
+  animation: drop-y var(--t) both;
+}
+@keyframes drop-y {
+  0% {
+    transform: translateY(0);
+    opacity: 0.95;
+    animation-timing-function: cubic-bezier(0.2, 0.6, 0.4, 1);
+  }
+  45% {
+    transform: translateY(var(--h));
+    animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.4);
+  }
+  92% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+.pond__drop b {
+  position: absolute;
+  left: -12px;
+  top: -5px;
+  width: 24px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--tint) 75%, transparent);
+  opacity: 0;
+  animation: drop-ring 0.7s ease-out var(--t) both;
+}
+@keyframes drop-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.2);
+  }
+  10% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.3);
+  }
+}
+
+/* Đom đóm */
+.pond__fly {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #fff0c2;
+  box-shadow: 0 0 8px 2px color-mix(in srgb, var(--s) 75%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  animation: pond-fly var(--d) ease-in-out var(--dl) infinite;
+}
+@keyframes pond-fly {
+  0%,
+  100% {
+    opacity: 0;
+    transform: translate(0, 0);
+  }
+  40%,
+  60% {
+    opacity: 0.9;
+  }
+  50% {
+    transform: translate(var(--dx), -24px);
+  }
+}
+
+/* ---- Đóa sen ----
+   Mọi lớp có kích thước cố định; trạng thái nở chỉ đổi transform/opacity nên không xô lệch bố cục. */
+.lotus {
+  --open: var(--open0);
+  --ease-calm: cubic-bezier(0.33, 0, 0.2, 1);
+  position: absolute;
+  width: 52px;
+  height: 52px;
+  margin: -26px 0 0 -26px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Mọi lớp đều neo tuyệt đối vào tâm nút: kích thước quầng sáng không bao giờ đẩy đóa sen lệch đi */
+.lotus > * {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: var(--d);
+  height: var(--d);
+  margin: calc(var(--d) / -2) 0 0 calc(var(--d) / -2);
+  pointer-events: none;
+}
+.lotus.is-active {
+  --open: 1;
+  z-index: 2;
+}
+.lotus:focus-visible {
+  outline: 2px solid var(--tint);
+  outline-offset: 2px;
+}
+.lotus__halo {
+  --d: 66px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--s) 50%, transparent) 0%,
+    color-mix(in srgb, var(--s) 14%, transparent) 45%,
+    transparent 70%
+  );
+  animation: lotus-breathe var(--tw) ease-in-out var(--td) infinite;
+}
+@keyframes lotus-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+.lotus--own .lotus__halo {
+  background: radial-gradient(circle, rgba(255, 240, 200, 0.7) 0%, color-mix(in srgb, var(--s) 30%, transparent) 45%, transparent 70%);
+}
+.lotus__glow {
+  --d: 150px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 246, 222, 0.55) 0%,
+    color-mix(in srgb, var(--s) 40%, transparent) 30%,
+    transparent 70%
+  );
+  opacity: 0;
+  transform: scale(0.5);
+  transition:
+    opacity 0.9s var(--ease-calm),
+    transform 0.9s var(--ease-calm);
+}
+.lotus__rays {
+  --d: 180px;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    color-mix(in srgb, var(--tint) 32%, transparent) 0deg 3deg,
+    transparent 3deg 15deg
+  );
+  -webkit-mask: radial-gradient(circle, #000 12%, transparent 66%);
+  mask: radial-gradient(circle, #000 12%, transparent 66%);
+  opacity: 0;
+  transition: opacity 1.2s var(--ease-calm);
+}
+.lotus.is-active .lotus__glow {
+  opacity: 1;
+  transform: scale(1);
+}
+.lotus.is-active .lotus__rays {
+  opacity: 0.75;
+  animation: lotus-rays 40s linear infinite;
+}
+@keyframes lotus-rays {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.lotus__lit {
+  --d: 96px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 242, 205, 0.8), color-mix(in srgb, var(--s) 42%, transparent) 35%, transparent 70%);
+  opacity: 0;
+  animation: lotus-lit 1.8s ease-out var(--ld) both;
+}
+@keyframes lotus-lit {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  30% {
+    opacity: var(--li);
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.1);
+  }
+}
+
+/* Lớp dập dềnh: đóa sen đang nở hơi nhún xuống nước; sóng tới thì các đóa khác nhấp nhô tắt dần */
+.lotus__float {
+  --d: 46px;
+}
+.lotus.is-active .lotus__float {
+  animation: lotus-press 1.3s var(--ease-calm) both;
+}
+.lotus__float.is-wave-0 {
+  animation: lotus-bob-a 2.4s linear var(--ld) both;
+}
+.lotus__float.is-wave-1 {
+  animation: lotus-bob-b 2.4s linear var(--ld) both;
+}
+@keyframes lotus-press {
+  0% {
+    transform: none;
+  }
+  20% {
+    transform: translateY(3px);
+  }
+  50% {
+    transform: translateY(-1.5px);
+  }
+  75% {
+    transform: translateY(0.6px);
+  }
+  100% {
+    transform: none;
+  }
+}
+@keyframes lotus-bob-a {
+  0%,
+  100% {
+    transform: none;
+  }
+  14% {
+    transform: translateY(calc(-4px * var(--li))) rotate(calc(-4deg * var(--li)));
+  }
+  32% {
+    transform: translateY(calc(3px * var(--li))) rotate(calc(3deg * var(--li)));
+  }
+  52% {
+    transform: translateY(calc(-1.8px * var(--li))) rotate(calc(-1.6deg * var(--li)));
+  }
+  74% {
+    transform: translateY(calc(0.8px * var(--li))) rotate(calc(0.6deg * var(--li)));
+  }
+}
+@keyframes lotus-bob-b {
+  0%,
+  100% {
+    transform: none;
+  }
+  14% {
+    transform: translateY(calc(-4px * var(--li))) rotate(calc(-4deg * var(--li)));
+  }
+  32% {
+    transform: translateY(calc(3px * var(--li))) rotate(calc(3deg * var(--li)));
+  }
+  52% {
+    transform: translateY(calc(-1.8px * var(--li))) rotate(calc(-1.6deg * var(--li)));
+  }
+  74% {
+    transform: translateY(calc(0.8px * var(--li))) rotate(calc(0.6deg * var(--li)));
+  }
+}
+
+.lotus__body {
+  display: block;
+  width: 46px;
+  height: 37px;
+  margin-top: 4.5px; /* căn tâm hoa vào giữa nút */
+  transform: scale(var(--fs));
+  transition:
+    transform 0.9s var(--ease-calm),
+    filter 0.9s var(--ease-calm);
+  filter: drop-shadow(0 0 4px color-mix(in srgb, var(--s) 55%, transparent)) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+}
+.lotus:hover .lotus__body,
+.lotus:focus-visible .lotus__body {
+  transform: scale(calc(var(--fs) * 1.1));
+}
+.lotus.is-active .lotus__body {
+  transform: scale(calc(var(--fs) * 1.3));
+  filter: drop-shadow(0 0 6px #fff3d6) drop-shadow(0 3px 4px rgba(0, 0, 0, 0.35));
+}
+.lotus__svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  transform-origin: 50% 85%;
+  animation: lotus-sway var(--tw) ease-in-out var(--td) infinite alternate;
+}
+@keyframes lotus-sway {
+  from {
+    transform: rotate(-2.5deg);
+  }
+  to {
+    transform: rotate(2.5deg);
+  }
+}
+.lotus__pad {
+  fill: color-mix(in srgb, #2f5a45 78%, var(--bg1));
+  opacity: 0.85;
+}
+.lotus__petal {
+  transform-box: view-box;
+  transform-origin: 0 0;
+  transform: rotate(calc(var(--a) * var(--open)));
+  transition: transform 1.2s var(--ease-calm);
+  stroke: rgba(255, 255, 255, 0.45);
+  stroke-width: 0.5;
+}
+.lotus__petal--back {
+  fill: url(#lotus-back);
+}
+.lotus__petal--mid {
+  fill: url(#lotus-mid);
+}
+.lotus__petal--front {
+  fill: url(#lotus-front);
+}
+.lotus__seed {
+  fill: url(#lotus-seed);
+  opacity: calc(var(--open) * 1.6 - 0.4);
+  transition: opacity 0.9s var(--ease-calm);
+}
+.lotus > .star__label {
+  top: calc(50% + 22px);
+  width: auto;
+  height: auto;
+  margin: 0;
+  transform: translateX(-50%) scale(0.75);
+  transform-origin: 50% 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pond__currents g,
+  .lotus__halo,
+  .lotus__svg,
+  .lotus.is-active .lotus__rays,
+  .lotus.is-active .lotus__float,
+  .lotus__float[class*='is-wave'] {
+    animation: none !important;
+  }
+  .pond__splash,
+  .pond__fly,
+  .lotus__lit {
+    display: none;
+  }
+  .lotus__petal,
+  .lotus__body,
+  .lotus__seed,
+  .lotus__glow,
+  .lotus__rays {
+    transition: none;
+  }
+}

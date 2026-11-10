@@ -17,7 +17,8 @@ function Ghost({ lines, tall }) {
 }
 
 // Bật bằng GUESTBOOK_ENABLED=true ở server. Chưa bật thì hiện khung "Sắp ra mắt".
-export default function Guestbook({ slug }) {
+export default function Guestbook({ slug, theme }) {
+  const dharma = theme === 'dharma';
   const [state, setState] = useState({ loading: true, enabled: false, items: [] });
 
   useEffect(() => {
@@ -42,11 +43,12 @@ export default function Guestbook({ slug }) {
         </div>
         {!state.enabled && <div className="glass badge">SẮP RA MẮT</div>}
         {state.enabled && state.items.length > 0 && (
-          <div className="glass badge">✦ {state.items.length} NGÔI SAO</div>
+          <div className="glass badge">{dharma ? '❀' : '✦'} {state.items.length} {dharma ? 'ĐÓA SEN' : 'NGÔI SAO'}</div>
         )}
       </div>
 
-      {state.enabled && state.items.length > 0 && <WishSky items={state.items} />}
+      {state.enabled && state.items.length > 0 &&
+        <WishSky items={state.items} variant={dharma ? 'lotus' : 'sky'} />}
 
       {state.enabled && state.items.length === 0 && (
         <div className="glass ghost ghost--empty">Chưa có lời chúc nào được hiển thị. Hãy là người đầu tiên!</div>

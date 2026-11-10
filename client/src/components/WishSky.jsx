@@ -35,6 +35,122 @@ const PARTICLES = [
   { x: '92%', y: '12%', s: '3px', d: '11s', dl: '-1s', dx: '10px' }
 ];
 
+// ---- Vườn sen (theme Phật pháp) ----
+// Cánh sen vẽ từ gốc (0,0) hướng lên; xoay theo --a * --open nên nụ có thể nở ra mượt bằng CSS.
+const PETAL_D = {
+  back: 'M0 0C-9 -7 -9 -23 0 -31C9 -23 9 -7 0 0Z',
+  mid: 'M0 0C-8 -6 -8 -20 0 -27C8 -20 8 -6 0 0Z',
+  front: 'M0 0C-6.5 -6 -6.5 -17 0 -24C6.5 -17 6.5 -6 0 0Z'
+};
+const PETALS = [
+  { a: -80, k: 'back' },
+  { a: 80, k: 'back' },
+  { a: -56, k: 'back' },
+  { a: 56, k: 'back' },
+  { a: -32, k: 'mid' },
+  { a: 32, k: 'mid' },
+  { a: -14, k: 'front' },
+  { a: 14, k: 'front' },
+  { a: 0, k: 'front' }
+];
+const BLOOM_OPEN = [0.14, 0.42, 0.7]; // nụ, hé nở, nở; bấm vào thì nở trọn (1)
+// Sóng là elip dẹt (nhìn mặt nước từ trên nghiêng xuống): bán kính ngang 300px, dọc 150px, lan trong 1.4s.
+const RIPPLE_REACH = 300;
+const RIPPLE_SPEED = 300 / 1.4; // px/giây theo trục ngang, khớp với .pond__ripple trong CSS
+const WATERLINE = 13; // khoảng từ tâm nút xuống mặt lá sen
+
+// Giọt nước bắn ra khi sen nở: bay theo đường cong rồi rơi xuống tạo gợn nhỏ.
+const SPLASH = (() => {
+  const r = mulberry32(7);
+  return Array.from({ length: 12 }, (_, k) => {
+    const a = (k / 12) * Math.PI * 2 + (r() - 0.5) * 0.4;
+    const d = 26 + r() * 34;
+    return {
+      dx: `${(Math.cos(a) * d).toFixed(1)}px`,
+      dy: `${(Math.sin(a) * d * 0.5).toFixed(1)}px`,
+      h: `${(-16 - r() * 26).toFixed(1)}px`,
+      s: `${(2 + r() * 2.2).toFixed(1)}px`,
+      t: `${(0.62 + r() * 0.25).toFixed(2)}s`
+    };
+  });
+})();
+
+function spreadLotus(sky, W, H) {
+  const minD = 60;
+  const pts = sky.stars.map((s) => ({ x: s.x * W, y: s.y * H }));
+  for (let it = 0; it < 40; it++) {
+    for (let a = 0; a < pts.length; a++) {
+      for (let b = a + 1; b < pts.length; b++) {
+        const dx = pts[b].x - pts[a].x;
+        const dy = pts[b].y - pts[a].y;
+        const d = Math.hypot(dx, dy) || 0.01;
+        if (d >= minD) continue;
+        const k = (minD - d) / 2 / d;
+        pts[a].x -= dx * k;
+        pts[a].y -= dy * k;
+        pts[b].x += dx * k;
+        pts[b].y += dy * k;
+      }
+    }
+    for (const p of pts) {
+      p.x = Math.min(W - 34, Math.max(34, p.x));
+      p.y = Math.min(H - 34, Math.max(36, p.y));
+    }
+  }
+  const map = new Map();
+  const stars = sky.stars.map((s, i) => {
+    const n = { ...s, x: pts[i].x / W, y: pts[i].y / H };
+    map.set(s, n);
+    return n;
+  });
+  return { stars, lines: sky.lines.map((l) => ({ a: map.get(l.a), b: map.get(l.b) })) };
+}
+
+function LotusDefs() {
+  return (
+    <svg className="sky__defs" width="0" height="0" aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id="lotus-back" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stopColor="#c9466f" />
+          <stop offset="1" stopColor="#ffb79e" />
+        </linearGradient>
+        <linearGradient id="lotus-mid" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stopColor="#ff8fb5" />
+          <stop offset="1" stopColor="#ffe2cf" />
+        </linearGradient>
+        <linearGradient id="lotus-front" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stopColor="#ffb0cb" />
+          <stop offset="1" stopColor="#fff7ec" />
+        </linearGradient>
+        <radialGradient id="lotus-seed">
+          <stop offset="0" stopColor="#fff3c4" />
+          <stop offset="1" stopColor="#f4a52e" />
+        </radialGradient>
+      </defs>
+    </svg>
+  );
+}
+
+function LotusFlower() {
+  return (
+    <svg className="lotus__svg" viewBox="-34 -42 68 54" aria-hidden="true" focusable="false">
+      <ellipse className="lotus__pad" cx="0" cy="5" rx="27" ry="7" />
+      {PETALS.map((p, k) => (
+        <path key={k} d={PETAL_D[p.k]} className={`lotus__petal lotus__petal--${p.k}`} style={{ '--a': `${p.a}deg` }} />
+      ))}
+      <circle className="lotus__seed" cx="0" cy="-7" r="3.6" />
+    </svg>
+  );
+}
+
+const FIREFLIES = Array.from({ length: 8 }, (_, k) => ({
+  x: `${6 + ((k * 41) % 88)}%`,
+  y: `${24 + ((k * 29) % 66)}%`,
+  d: `${8 + (k % 4) * 2.5}s`,
+  dl: `${-k * 1.9}s`,
+  dx: `${(k % 2 ? 1 : -1) * (12 + (k % 3) * 8)}px`
+}));
+
 const SPARKS = Array.from({ length: 10 }, (_, k) => ({ a: `${k * 36 + (k % 2) * 12}deg`, r: `${34 + (k % 3) * 12}px` }));
 
 // Vị trí sao cố định theo danh sách lời chúc: mỗi lần mở trang bầu trời đều giống nhau.
@@ -124,7 +240,22 @@ function Message({ star, out }) {
   );
 }
 
-function UniverseCard({ star, live, reduced, onNeighbor }) {
+const COPY = {
+  sky: {
+    eyebrow: 'A MESSAGE FROM THE UNIVERSE',
+    hint: 'Tap another star to discover a memory.',
+    neighbor: '✧ Ngôi sao cạnh bên',
+    send: '✦ Gửi ánh sáng'
+  },
+  lotus: {
+    eyebrow: 'LỜI NGUYỆN TỪ VƯỜN SEN',
+    hint: 'Chạm vào một đóa sen để nghe lời chúc.',
+    neighbor: '❀ Đóa sen cạnh bên',
+    send: '✦ Gửi an lành'
+  }
+};
+
+function UniverseCard({ star, live, reduced, onNeighbor, copy }) {
   const [out, setOut] = useState(null);
   const [bursts, setBursts] = useState([]);
   const prevRef = useRef(star);
@@ -161,19 +292,19 @@ function UniverseCard({ star, live, reduced, onNeighbor }) {
           />
         ))}
       </div>
-      <div className="uc__eyebrow">A MESSAGE FROM THE UNIVERSE</div>
+      <div className="uc__eyebrow">{copy.eyebrow}</div>
       <div className="uc__stage" aria-live={live ? 'polite' : 'off'}>
         {out && <Message key={`out-${out.item.id}`} star={out} out />}
         <Message key={star.item.id} star={star} />
       </div>
       <div className="uc__foot">
-        <p className="uc__hint">Tap another star to discover a memory.</p>
+        <p className="uc__hint">{copy.hint}</p>
         <div className="uc__btns">
           <button type="button" className="uc__btn" onClick={onNeighbor}>
-            ✧ Ngôi sao cạnh bên
+            {copy.neighbor}
           </button>
           <button type="button" className="uc__btn" onClick={() => burst('btn')}>
-            ✦ Gửi ánh sáng
+            {copy.send}
           </button>
         </div>
       </div>
@@ -188,8 +319,10 @@ function UniverseCard({ star, live, reduced, onNeighbor }) {
   );
 }
 
-export default function WishSky({ items }) {
-  const sky = useMemo(() => buildSky(items), [items]);
+export default function WishSky({ items, variant = 'sky' }) {
+  const lotus = variant === 'lotus';
+  const copy = COPY[lotus ? 'lotus' : 'sky'];
+  const baseSky = useMemo(() => buildSky(items), [items]);
   const reduced = usePrefersReducedMotion();
 
   const rootRef = useRef(null);
@@ -210,8 +343,8 @@ export default function WishSky({ items }) {
   const [inView, setInView] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [meteor, setMeteor] = useState(null);
+  const [ripple, setRipple] = useState(null);
 
-  const active = sky.stars.find((s) => s.item.id === activeId) ?? sky.stars[0];
 
   // Bầu trời rộng hơn khung nhìn; trên màn hình cảm ứng chỉ kéo ngang để không chặn cuộn trang.
   const world = useMemo(() => {
@@ -224,6 +357,13 @@ export default function WishSky({ items }) {
     }
     return { W: view.w * fx, H: view.h * fy };
   }, [items.length, view]);
+
+  // Sen to hơn sao nên cần giãn cách theo pixel thật để không đè lên nhau.
+  const sky = useMemo(
+    () => (lotus && world.W ? spreadLotus(baseSky, world.W, world.H) : baseSky),
+    [baseSky, lotus, world.W, world.H]
+  );
+  const active = sky.stars.find((s) => s.item.id === activeId) ?? sky.stars[0];
 
   const apply = useCallback(
     (x, y, glide = false) => {
@@ -285,6 +425,8 @@ export default function WishSky({ items }) {
   useEffect(() => {
     visited.current.add(activeId);
     if (centered.current) focusStar(active, !reduced);
+    // Sen nở → sóng lan ra, chạm tới đâu đóa sen ở đó sáng lên
+    if (lotus && !reduced && revealed && active) setRipple((r) => ({ key: (r?.key ?? 0) + 1, star: active }));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeId]);
 
@@ -310,7 +452,7 @@ export default function WishSky({ items }) {
   }, [interacted, inView, sky]);
 
   useEffect(() => {
-    if (!inView || reduced) return undefined;
+    if (!inView || reduced || lotus) return undefined;
     let t;
     const next = () => {
       t = setTimeout(() => {
@@ -320,7 +462,7 @@ export default function WishSky({ items }) {
     };
     next();
     return () => clearTimeout(t);
-  }, [inView, reduced]);
+  }, [inView, reduced, lotus]);
 
   useEffect(() => {
     const el = viewRef.current;
@@ -402,6 +544,8 @@ export default function WishSky({ items }) {
     }
     setInteracted(true);
     setActiveId(star.item.id);
+    // Chạm lại đóa đang nở vẫn gợn sóng (đổi đóa thì effect theo activeId lo)
+    if (lotus && !reduced && star.item.id === activeId) setRipple((r) => ({ key: (r?.key ?? 0) + 1, star }));
   };
 
   // Ngôi sao gần nhất chưa ghé; ghé hết rồi thì bắt đầu vòng mới để không đi vòng quanh một cặp sao.
@@ -420,7 +564,11 @@ export default function WishSky({ items }) {
   };
 
   return (
-    <div ref={rootRef} className={`sky${revealed ? ' is-revealed' : ''}${dragged ? ' has-dragged' : ''}`}>
+    <div
+      ref={rootRef}
+      className={`sky${lotus ? ' sky--lotus' : ''}${revealed ? ' is-revealed' : ''}${dragged ? ' has-dragged' : ''}`}
+    >
+      {lotus && <LotusDefs />}
       <div
         ref={viewRef}
         className="sky__view"
@@ -430,35 +578,115 @@ export default function WishSky({ items }) {
         onPointerCancel={(e) => endDrag(e, false)}
       >
         <div ref={dustRef} className="sky__dust" style={{ width: world.W, height: world.H }} aria-hidden="true">
+          {lotus && (
+            <svg className="pond__currents" viewBox="0 0 1000 600" preserveAspectRatio="none">
+              <g>
+                {[90, 170, 250, 330, 410, 490, 560].map((y, k) => (
+                  <path
+                    key={y}
+                    d={`M-80 ${y} Q ${60 + k * 20} ${y - 22} ${200 + k * 10} ${y} T ${480 + k * 10} ${y} T ${760 + k * 10} ${y} T 1100 ${y}`}
+                  />
+                ))}
+              </g>
+            </svg>
+          )}
           {DUST.map((p, k) => (
             <i key={k} style={{ left: `${p.x}%`, top: `${p.y}%`, width: p.s, height: p.s, opacity: p.o }} />
           ))}
         </div>
 
         <div ref={worldRef} className="sky__world" style={{ width: world.W, height: world.H }}>
-          <svg className="sky__lines" width={world.W} height={world.H} aria-hidden="true">
-            {sky.lines.map((l, k) => {
-              const x1 = l.a.x * world.W;
-              const y1 = l.a.y * world.H;
-              const x2 = l.b.x * world.W;
-              const y2 = l.b.y * world.H;
-              const hot = l.a === active || l.b === active;
-              return (
-                <line
-                  key={k}
-                  x1={x1}
-                  y1={y1}
-                  x2={x2}
-                  y2={y2}
-                  className={hot ? 'is-hot' : undefined}
-                  style={{ '--len': Math.hypot(x2 - x1, y2 - y1), animationDelay: `${0.4 + k * 0.14}s` }}
-                />
-              );
-            })}
-          </svg>
+          {!lotus && (
+            <svg className="sky__lines" width={world.W} height={world.H} aria-hidden="true">
+              {sky.lines.map((l, k) => {
+                const x1 = l.a.x * world.W;
+                const y1 = l.a.y * world.H;
+                const x2 = l.b.x * world.W;
+                const y2 = l.b.y * world.H;
+                const hot = l.a === active || l.b === active;
+                return (
+                  <line
+                    key={k}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    className={hot ? 'is-hot' : undefined}
+                    style={{ '--len': Math.hypot(x2 - x1, y2 - y1), animationDelay: `${0.4 + k * 0.14}s` }}
+                  />
+                );
+              })}
+            </svg>
+          )}
+
+          {lotus && ripple && (
+            <span
+              key={ripple.key}
+              className="pond__splash"
+              style={{ left: ripple.star.x * world.W, top: ripple.star.y * world.H + WATERLINE }}
+              aria-hidden="true"
+            >
+              <span className="pond__ripple">
+                <i />
+                <i />
+                <i />
+                <i />
+              </span>
+              {SPLASH.map((d, k) => (
+                <span key={k} className="pond__drop" style={{ '--dx': d.dx, '--dy': d.dy, '--h': d.h, '--s': d.s, '--t': d.t }}>
+                  <i />
+                  <b />
+                </span>
+              ))}
+            </span>
+          )}
 
           {sky.stars.map((s) => {
             const isActive = s === active;
+            if (lotus) {
+              let lit = 0;
+              if (ripple && s.item.id !== ripple.star.item.id) {
+                // khoảng cách theo elip của sóng (trục dọc nén một nửa)
+                const d = Math.hypot((s.x - ripple.star.x) * world.W, (s.y - ripple.star.y) * world.H * 2);
+                if (d < RIPPLE_REACH) lit = d;
+              }
+              const bloom = hashStr(String(s.item.id)) % 3;
+              const wave = lit > 0 ? { '--ld': `${(lit / RIPPLE_SPEED).toFixed(2)}s`, '--li': (1 - lit / RIPPLE_REACH).toFixed(2) } : null;
+              return (
+                <button
+                  key={s.item.id}
+                  type="button"
+                  className={`lotus${isActive ? ' is-active' : ''}${s.item.isOwn ? ' lotus--own' : ''}`}
+                  style={{
+                    left: s.x * world.W,
+                    top: s.y * world.H,
+                    '--open0': BLOOM_OPEN[bloom],
+                    '--fs': (0.82 + (s.size - 2.5) / 3 * 0.32).toFixed(2),
+                    '--tw': `${s.dur + 3}s`,
+                    '--td': `${s.delay}s`
+                  }}
+                  aria-label={`Lời chúc từ ${s.item.from}`}
+                  aria-pressed={isActive}
+                  onClick={() => select(s)}
+                  onFocus={() => focusStar(s, !reduced)}
+                >
+                  <span className="lotus__halo" />
+                  <span className="lotus__glow" />
+                  <span className="lotus__rays" />
+                  {wave && <span key={ripple.key} className="lotus__lit" style={wave} />}
+                  {/* Sóng tới thì đóa sen dập dềnh; đổi tên animation theo lượt sóng để chạy lại mà không remount */}
+                  <span
+                    className={`lotus__float${wave ? ` is-wave-${ripple.key % 2}` : ''}`}
+                    style={wave ?? undefined}
+                  >
+                    <span className="lotus__body">
+                      <LotusFlower />
+                    </span>
+                  </span>
+                  {s.item.isOwn && <span className="star__label">Đóa sen của bạn</span>}
+                </button>
+              );
+            }
             return (
               <button
                 key={s.item.id}
@@ -495,11 +723,21 @@ export default function WishSky({ items }) {
         )}
 
         <div className="sky__hint" aria-hidden="true">
-          ✦ Kéo để khám phá bầu trời
+          {lotus ? '❀ Kéo để khám phá vườn sen' : '✦ Kéo để khám phá bầu trời'}
         </div>
+
+        {lotus &&
+          FIREFLIES.map((f, k) => (
+            <i
+              key={k}
+              className="pond__fly"
+              aria-hidden="true"
+              style={{ left: f.x, top: f.y, '--d': f.d, '--dl': f.dl, '--dx': f.dx }}
+            />
+          ))}
       </div>
 
-      <UniverseCard star={active} live={interacted} reduced={reduced} onNeighbor={goNeighbor} />
+      <UniverseCard star={active} live={interacted} reduced={reduced} onNeighbor={goNeighbor} copy={copy} />
     </div>
   );
 }
