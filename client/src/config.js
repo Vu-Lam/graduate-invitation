@@ -11,7 +11,7 @@ export const config = {
     major: 'Khoa Học Máy Tính',
     faculty: 'KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH',
     school: 'Trường ĐH Bách khoa - ĐHQG-HCM',
-    bio: 'Mình sắp tốt nghiệp rồi.',
+    bio: 'Mình sắp tốt nghiệp rồi. Chỗ này đáng lẻ mình sẽ viết một vài dòng giới thiệu về bản thân, nhưng mình không biết viết gì nữa nên thôi.',
     // Ảnh chân dung: bỏ file vào client/public rồi điền đường dẫn, ví dụ '/portrait.jpg'. Để trống = hiện khung chờ.
     photo: '/ava-invitation-transparent.png',
     // Mỗi dòng: { label, value, href }. href để trống nếu không cần bấm được.

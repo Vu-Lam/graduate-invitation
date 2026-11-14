@@ -18,7 +18,7 @@ function Timeline({ guest, event }) {
     { key: 'host', label: 'Mình có mặt', text: `từ ${fmtTime(event.hostFrom)}`, from: event.hostFrom, to: event.axis.end, open: true },
     guest?.arrival && {
       key: 'guest',
-      label: 'Mời bạn đến',
+      label: `Mời ${guest.honorific} đến`,
       text: fmtRange(guest.arrival),
       from: guest.arrival.start,
       to: guest.arrival.end

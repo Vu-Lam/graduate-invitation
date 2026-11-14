@@ -75,7 +75,7 @@ export default function Hero({ guest, countdown, onDownload, downloading, downlo
           </div>
           <div className="glass fact">
             <Icon name="clock" size={18} />
-            {guest.arrival ? `Mời bạn đến ${fmtRange(guest.arrival)}` : event.timeText}
+            {guest.arrival ? `Mời ${guest.honorific} đến ${fmtRange(guest.arrival)}` : event.timeText}
           </div>
           <div className="glass fact">
             <Icon name="pin" size={18} />

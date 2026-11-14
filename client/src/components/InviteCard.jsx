@@ -46,7 +46,7 @@ const InviteCard = forwardRef(function InviteCard({ guest, qr, link }, ref) {
           </div>
           <div>
             <Icon name="clock" size={36} strokeWidth={1.7} />
-            <span>{guest.arrival ? `Mời đến ${fmtRange(guest.arrival)}` : event.timeText}</span>
+            <span>{guest.arrival ? `Mời ${guest.honorific} đến ${fmtRange(guest.arrival)}` : event.timeText}</span>
           </div>
           <div>
             <Icon name="pin" size={36} strokeWidth={1.7} />
