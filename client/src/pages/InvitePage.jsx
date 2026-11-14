@@ -63,6 +63,14 @@ export default function InvitePage() {
     setDownloading(true);
     setDownloadError('');
     try {
+      if (document.fonts?.load) {
+        // Ép tải đủ font dùng trên thiệp trước khi chụp, tránh chụp khi còn font dự phòng (làm vỡ layout)
+        await Promise.all([
+          document.fonts.load('800 64px "Bricolage Grotesque"', `${guest.name} ${config.host.name}`),
+          document.fonts.load('500 24px "Inter"', 'Tiếng Việt ăn ở ưu'),
+          document.fonts.load('600 24px "Inter"', 'Tiếng Việt ăn ở ưu')
+        ]).catch(() => {});
+      }
       if (document.fonts?.ready) await document.fonts.ready;
       const options = { pixelRatio: 1, cacheBust: true };
       let dataUrl;
@@ -123,7 +131,7 @@ export default function InvitePage() {
               downloading={downloading}
               downloadError={downloadError}
             />
-            <Info />
+            <Info guest={guest} />
             <Tour />
             <Rsvp key={guest.slug} guest={guest} onSaved={(g) => setLoad({ status: 'ready', guest: g })} />
             <Guestbook slug={guest.slug} theme={theme} />

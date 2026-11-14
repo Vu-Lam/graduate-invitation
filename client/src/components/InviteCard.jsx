@@ -2,6 +2,7 @@ import { forwardRef } from 'react';
 import Icon from './Icon.jsx';
 import { LogoShapes, Lotus, Wheel } from './Decor.jsx';
 import { config } from '../config.js';
+import { fmtRange } from '../utils.js';
 
 // Ảnh thiệp 1080x1350 để tải về. Cố ý KHÔNG dùng backdrop-filter:
 // các mảng nền được làm mờ sẵn nên PNG xuất ra vẫn giữ hiệu ứng kính.
@@ -45,7 +46,7 @@ const InviteCard = forwardRef(function InviteCard({ guest, qr, link }, ref) {
           </div>
           <div>
             <Icon name="clock" size={36} strokeWidth={1.7} />
-            <span>{event.timeText}</span>
+            <span>{guest.arrival ? `Mời đến ${fmtRange(guest.arrival)}` : event.timeText}</span>
           </div>
           <div>
             <Icon name="pin" size={36} strokeWidth={1.7} />

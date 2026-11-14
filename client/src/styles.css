@@ -1931,6 +1931,7 @@ img {
   background: var(--tint);
 }
 .xcard__host {
+  white-space: nowrap;
   font-size: 64px;
   line-height: 1.05;
   font-weight: 800;
@@ -2560,4 +2561,219 @@ img {
   .lotus__rays {
     transition: none;
   }
+}
+
+/* ---- Dòng thời gian trong thẻ THỜI GIAN ---- */
+.card--time {
+  grid-column: 1 / -1;
+}
+.tl {
+  margin: 8px 0 4px;
+}
+.tl__lanes {
+  position: relative;
+  display: grid;
+  gap: 14px;
+  padding-bottom: 28px;
+}
+.tl__lane {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  align-items: center;
+  gap: 14px;
+}
+.tl__label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+.tl__track {
+  position: relative;
+  height: 42px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  background-image: repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.14) 0 1px, transparent 1px calc(100% / 9));
+}
+.tl__bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font-size: 14px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  animation: tl-grow 0.9s cubic-bezier(0.33, 0, 0.2, 1) both;
+  transform-origin: left center;
+}
+.tl__lane--guest .tl__bar {
+  background: linear-gradient(135deg, var(--tint), var(--s));
+  color: var(--ink);
+  border-color: transparent;
+  box-shadow: 0 6px 22px color-mix(in srgb, var(--s) 55%, transparent);
+  animation-delay: 0.15s;
+}
+.tl__lane--ceremony .tl__bar {
+  background: repeating-linear-gradient(135deg, #e5484d 0 12px, #d13a40 12px 24px);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: 0 6px 22px rgba(229, 72, 77, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+  animation-delay: 0.3s;
+}
+.tl__bar--open {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0.05));
+  justify-content: flex-start;
+}
+.tl__axis {
+  position: absolute;
+  left: 144px;
+  right: 0;
+  bottom: 0;
+  height: 18px;
+  font-size: 12px;
+  color: var(--text-soft);
+  opacity: 0.8;
+}
+.tl__axis span {
+  position: absolute;
+  transform: translateX(-50%);
+}
+@keyframes tl-grow {
+  from {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}
+@media (max-width: 640px) {
+  .tl__lane {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .tl__axis {
+    left: 0;
+  }
+  .tl__bar {
+    font-size: 12px;
+    padding: 0 6px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tl__bar {
+    animation: none;
+  }
+}
+.tl__label small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Hai thẻ dưới chia đều hai cột, thẻ thời gian chiếm cả hàng */
+@media (min-width: 760px) {
+  .cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+.parking {
+  display: grid;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.22);
+}
+.parking__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+.parking__list li {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  font-size: 15px;
+}
+.parking__list li span {
+  font-size: 14px;
+  color: var(--text-soft);
+}
+.parking__maps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+.parking__maps a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Bố cục lại: thời gian & địa điểm full hàng, liên hệ là thanh ngang gọn */
+.card--place,
+.card--contact {
+  grid-column: 1 / -1;
+}
+@media (min-width: 760px) {
+  .parking__list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+.card--contact {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 32px;
+}
+.contact__who {
+  flex: 1 1 200px;
+}
+.contact__who .card__title {
+  font-size: 24px;
+}
+.contact__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.contact__links a,
+.contact__links span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 20px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  color: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.tl__lane { grid-template-columns: 170px 1fr; }
+.tl__axis { left: 184px; }
+@media (max-width: 640px) {
+  .tl__lane { grid-template-columns: 1fr; }
+  .tl__axis { left: 0; }
 }

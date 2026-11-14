@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { config } from '../config.js';
+import AdminSchedules from '../components/AdminSchedules.jsx';
 
 const TOKEN_KEY = 'admin-token';
 
@@ -41,6 +42,7 @@ export default function Admin() {
   const [editError, setEditError] = useState('');
   const [deleting, setDeleting] = useState(null);
   const [togglingWish, setTogglingWish] = useState(null);
+  const [tab, setTab] = useState('guests');
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -296,7 +298,7 @@ export default function Admin() {
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h1>Quản lý khách mời</h1>
+          <h1>{tab === 'guests' ? 'Quản lý khách mời' : 'Khung giờ theo nhóm'}</h1>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => loadGuests(token)}
@@ -331,6 +333,34 @@ export default function Admin() {
           </div>
         </div>
 
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+          {[
+            ['guests', 'Khách mời'],
+            ['schedules', 'Khung giờ']
+          ].map(([key, label]) => (
+            <button
+              key={key}
+              onClick={() => setTab(key)}
+              style={{
+                padding: '10px 22px',
+                borderRadius: '999px',
+                border: tab === key ? 'none' : '1px solid rgba(255, 255, 255, 0.4)',
+                background: tab === key ? '#fff' : 'transparent',
+                color: tab === key ? '#031a63' : '#fff',
+                fontSize: '14px',
+                fontWeight: 600,
+                cursor: 'pointer'
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {tab === 'schedules' ? (
+          <AdminSchedules token={token} />
+        ) : (
+          <>
         <button
           onClick={() => setShowForm(!showForm)}
           style={{
@@ -698,6 +728,8 @@ export default function Admin() {
           Tổng cộng: {guests.length} khách · Lời chúc: {guests.filter((g) => g.wish && g.wishVisible).length} đang hiện,{' '}
           {guests.filter((g) => g.wish && !g.wishVisible).length} đang ẩn
         </div>
+          </>
+        )}
       </div>
     </div>
   );

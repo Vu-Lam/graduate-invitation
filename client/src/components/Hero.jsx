@@ -1,6 +1,7 @@
 import Icon from './Icon.jsx';
 import { Lotus } from './Decor.jsx';
 import { config } from '../config.js';
+import { fmtRange } from '../utils.js';
 
 const pad = (n) => String(n).padStart(2, '0');
 
@@ -74,7 +75,7 @@ export default function Hero({ guest, countdown, onDownload, downloading, downlo
           </div>
           <div className="glass fact">
             <Icon name="clock" size={18} />
-            {event.timeText}
+            {guest.arrival ? `Mời bạn đến ${fmtRange(guest.arrival)}` : event.timeText}
           </div>
           <div className="glass fact">
             <Icon name="pin" size={18} />
