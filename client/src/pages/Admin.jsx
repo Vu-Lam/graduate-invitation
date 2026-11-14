@@ -548,6 +548,7 @@ export default function Admin() {
                   <th style={{ padding: '12px', textAlign: 'left' }}>Xưng hô</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Nhóm</th>
                   <th style={{ padding: '12px', textAlign: 'center' }}>RSVP</th>
+                  <th style={{ padding: '12px', textAlign: 'left' }}>Liên lạc</th>
                   <th style={{ padding: '12px', textAlign: 'left', minWidth: '240px' }}>Lời chúc</th>
                   <th style={{ padding: '12px', textAlign: 'center' }}>Lượt mở</th>
                   <th style={{ padding: '12px', textAlign: 'left' }}>Thao tác</th>
@@ -618,6 +619,23 @@ export default function Admin() {
                     </td>
                     <td style={{ padding: '12px', textAlign: 'center', color: guest.rsvpStatus ? '#3fd1b0' : 'rgba(255, 255, 255, 0.6)' }}>
                       {guest.rsvpStatus ? guest.rsvpStatus.toUpperCase() : '—'}
+                    </td>
+                    <td style={{ padding: '12px', overflowWrap: 'anywhere', maxWidth: '200px' }}>
+                      {guest.contact ? (
+                        /^[\d\s.+()-]{8,}$/.test(guest.contact) ? (
+                          <a href={`tel:${guest.contact.replace(/[^\d+]/g, '')}`} style={{ color: '#fff' }}>
+                            {guest.contact}
+                          </a>
+                        ) : guest.contact.includes('@') ? (
+                          <a href={`mailto:${guest.contact}`} style={{ color: '#fff' }}>
+                            {guest.contact}
+                          </a>
+                        ) : (
+                          guest.contact
+                        )
+                      ) : (
+                        <span style={{ color: 'rgba(255, 255, 255, 0.5)' }}>—</span>
+                      )}
                     </td>
                     <td style={{ padding: '12px', verticalAlign: 'top' }}>
                       {guest.wish ? (

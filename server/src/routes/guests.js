@@ -167,7 +167,7 @@ function requireAdmin(req, res, next) {
 router.get('/admin/guests', requireAdmin, async (req, res, next) => {
   try {
     const guests = await Guest.find()
-      .select('slug name honorific group rsvp.status rsvp.wish wishVisible visits lastVisitAt createdAt')
+      .select('slug name honorific group rsvp.status rsvp.contact rsvp.wish wishVisible visits lastVisitAt createdAt')
       .sort({ createdAt: -1 })
       .lean();
     const items = guests.map((g) => ({
@@ -177,6 +177,7 @@ router.get('/admin/guests', requireAdmin, async (req, res, next) => {
       honorific: g.honorific,
       group: g.group,
       rsvpStatus: g.rsvp?.status ?? null,
+      contact: g.rsvp?.contact ?? '',
       wish: g.rsvp?.wish ?? '',
       wishVisible: Boolean(g.wishVisible),
       visits: g.visits,
@@ -380,6 +381,7 @@ router.put('/admin/guests/:id', requireAdmin, async (req, res, next) => {
       honorific: guest.honorific,
       group: guest.group,
       rsvpStatus: guest.rsvp?.status ?? null,
+      contact: guest.rsvp?.contact ?? '',
       wish: guest.rsvp?.wish ?? '',
       wishVisible: Boolean(guest.wishVisible),
       visits: guest.visits,
