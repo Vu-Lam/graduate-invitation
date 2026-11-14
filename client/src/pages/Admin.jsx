@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { config } from '../config.js';
 import AdminSchedules from '../components/AdminSchedules.jsx';
+import AdminHonorifics from '../components/AdminHonorifics.jsx';
 
 const TOKEN_KEY = 'admin-token';
 
@@ -43,6 +44,19 @@ export default function Admin() {
   const [deleting, setDeleting] = useState(null);
   const [togglingWish, setTogglingWish] = useState(null);
   const [tab, setTab] = useState('guests');
+  const [honorifics, setHonorifics] = useState(['bạn', 'anh', 'chị', 'em', 'cô', 'chú']);
+
+  // Nạp danh sách xưng hô mỗi khi quay lại tab Khách mời (có thể vừa chỉnh ở tab Xưng hô)
+  useEffect(() => {
+    if (!authenticated || tab !== 'guests') return;
+    fetch(`${config.apiUrl}/api/admin/honorifics`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setHonorifics(d.items.map((h) => h.name)))
+      .catch(() => {});
+  }, [authenticated, tab, token]);
+
+  // Khách đang dùng xưng hô đã bị gỡ khỏi danh sách vẫn phải hiện được
+  const honorificOptions = (current) => (current && !honorifics.includes(current) ? [...honorifics, current] : honorifics);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -298,7 +312,7 @@ export default function Admin() {
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h1>{tab === 'guests' ? 'Quản lý khách mời' : 'Khung giờ theo nhóm'}</h1>
+          <h1>{{ guests: 'Quản lý khách mời', schedules: 'Khung giờ theo nhóm', honorifics: 'Cách xưng hô' }[tab]}</h1>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => loadGuests(token)}
@@ -336,7 +350,8 @@ export default function Admin() {
         <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
           {[
             ['guests', 'Khách mời'],
-            ['schedules', 'Khung giờ']
+            ['schedules', 'Khung giờ'],
+            ['honorifics', 'Xưng hô']
           ].map(([key, label]) => (
             <button
               key={key}
@@ -359,6 +374,8 @@ export default function Admin() {
 
         {tab === 'schedules' ? (
           <AdminSchedules token={token} />
+        ) : tab === 'honorifics' ? (
+          <AdminHonorifics token={token} />
         ) : (
           <>
         <button
@@ -441,15 +458,11 @@ export default function Admin() {
                     boxSizing: 'border-box'
                   }}
                 >
-                  <option value="bạn">Thầy</option>
-                  <option value="bạn">Cô</option>
-                  <option value="bạn">Xếp</option>
-                  <option value="bạn">Bạn</option>
-                  <option value="anh">Anh</option>
-                  <option value="chị">Chị</option>
-                  <option value="cô">Cô</option>
-                  <option value="chú">Chú</option>
-                  <option value="em">Em</option>
+                  {honorificOptions(newGuest.honorific).map((h) => (
+                    <option key={h} value={h}>
+                      {h.charAt(0).toUpperCase() + h.slice(1)}
+                    </option>
+                  ))}
                 </select>
               </div>
 
@@ -575,12 +588,11 @@ export default function Admin() {
                             fontSize: '13px'
                           }}
                         >
-                          <option value="bạn">Bạn</option>
-                          <option value="anh">Anh</option>
-                          <option value="chị">Chị</option>
-                          <option value="cô">Cô</option>
-                          <option value="chú">Chú</option>
-                          <option value="em">Em</option>
+                          {honorificOptions(editData.honorific).map((h) => (
+                            <option key={h} value={h}>
+                              {h.charAt(0).toUpperCase() + h.slice(1)}
+                            </option>
+                          ))}
                         </select>
                       ) : (
                         guest.honorific

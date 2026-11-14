@@ -8,6 +8,7 @@ import rateLimit from 'express-rate-limit';
 import { connectDb } from './db.js';
 import guestsRouter from './routes/guests.js';
 import { seedGroupSchedules } from './models/GroupSchedule.js';
+import { seedHonorifics } from './models/Honorific.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const clientDist = path.resolve(__dirname, '../../client/dist');
@@ -62,7 +63,7 @@ app.use((err, req, res, next) => {
 const port = Number(process.env.PORT) || 3001;
 
 connectDb(process.env.MONGODB_URI)
-  .then(() => seedGroupSchedules())
+  .then(() => Promise.all([seedGroupSchedules(), seedHonorifics()]))
   .then(() => {
     app.listen(port, () => console.log(`Server chạy tại http://localhost:${port}`));
   })

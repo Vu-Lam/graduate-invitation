@@ -3,6 +3,7 @@ import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { Guest } from '../models/Guest.js';
 import { GroupSchedule, normGroup, pickArrival } from '../models/GroupSchedule.js';
+import { Honorific } from '../models/Honorific.js';
 import { SLUG_RE } from '../utils/slug.js';
 
 const router = Router();
@@ -244,6 +245,71 @@ router.delete('/admin/schedules/:id', requireAdmin, async (req, res, next) => {
   try {
     const doc = await GroupSchedule.findByIdAndDelete(req.params.id);
     if (!doc) return res.status(404).json({ error: 'Không tìm thấy nhóm.' });
+    return res.json({ ok: true });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Admin: Danh sách cách xưng hô
+const honorificSchema = z.object({
+  name: z.string().trim().min(1, 'Cách xưng hô không được để trống.').max(20, 'Tối đa 20 ký tự.')
+});
+
+router.get('/admin/honorifics', requireAdmin, async (req, res, next) => {
+  try {
+    const [rows, used] = await Promise.all([
+      Honorific.find().sort({ order: 1, createdAt: 1 }).lean(),
+      Guest.aggregate([{ $group: { _id: '$honorific', count: { $sum: 1 } } }])
+    ]);
+    const counts = Object.fromEntries(used.map((u) => [u._id, u.count]));
+    return res.json({ items: rows.map((r) => ({ id: String(r._id), name: r.name, guests: counts[r.name] ?? 0 })) });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.post('/admin/honorifics', requireAdmin, async (req, res, next) => {
+  try {
+    const parsed = honorificSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+    const name = parsed.data.name.toLowerCase();
+    if (await Honorific.exists({ name })) return res.status(400).json({ error: 'Cách xưng hô này có rồi.' });
+    const last = await Honorific.findOne().sort({ order: -1 }).lean();
+    const doc = await Honorific.create({ name, order: (last?.order ?? 0) + 1 });
+    return res.status(201).json({ id: String(doc._id), name: doc.name, guests: 0 });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Đổi tên thì cập nhật luôn các khách đang dùng
+router.put('/admin/honorifics/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const parsed = honorificSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+    const name = parsed.data.name.toLowerCase();
+    const current = await Honorific.findById(req.params.id);
+    if (!current) return res.status(404).json({ error: 'Không tìm thấy.' });
+    if (name !== current.name) {
+      if (await Honorific.exists({ name })) return res.status(400).json({ error: 'Cách xưng hô này có rồi.' });
+      await Guest.updateMany({ honorific: current.name }, { honorific: name });
+      current.name = name;
+      await current.save();
+    }
+    return res.json({ id: String(current._id), name: current.name });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+router.delete('/admin/honorifics/:id', requireAdmin, async (req, res, next) => {
+  try {
+    const doc = await Honorific.findById(req.params.id);
+    if (!doc) return res.status(404).json({ error: 'Không tìm thấy.' });
+    const n = await Guest.countDocuments({ honorific: doc.name });
+    if (n > 0) return res.status(400).json({ error: `Đang có ${n} khách dùng "${doc.name}", hãy đổi xưng hô của họ trước.` });
+    await doc.deleteOne();
     return res.json({ ok: true });
   } catch (err) {
     return next(err);
