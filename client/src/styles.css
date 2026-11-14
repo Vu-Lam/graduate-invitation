@@ -1325,9 +1325,13 @@ img {
     opacity: 0;
   }
 }
+/* Nhãn neo tuyệt đối: nếu nằm trong lưới của .star, độ rộng chữ sẽ nới cột và đẩy ngôi sao lệch tâm */
 .star__label {
-  align-self: end;
-  transform: translateY(18px) scale(0.69);
+  position: absolute;
+  left: 50%;
+  top: calc(50% + 23px);
+  transform: translateX(-50%) scale(0.69);
+  transform-origin: 50% 0;
   white-space: nowrap;
   font-size: 12px;
   font-weight: 700;
