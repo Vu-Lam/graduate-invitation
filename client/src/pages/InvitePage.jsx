@@ -131,7 +131,7 @@ export default function InvitePage() {
               downloading={downloading}
               downloadError={downloadError}
             />
-            <Info guest={guest} />
+            <Info guest={guest} theme={theme} />
             <Tour />
             <Rsvp key={guest.slug} guest={guest} onSaved={(g) => setLoad({ status: 'ready', guest: g })} />
             <Guestbook slug={guest.slug} theme={theme} />

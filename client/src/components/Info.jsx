@@ -1,5 +1,6 @@
 import Icon from './Icon.jsx';
 import { config } from '../config.js';
+import { THEMES } from '../themes.js';
 import { fmtRange, fmtTime } from '../utils.js';
 
 const mins = (t) => {
@@ -56,8 +57,10 @@ function Timeline({ guest, event }) {
   );
 }
 
-export default function Info({ guest }) {
+export default function Info({ guest, theme }) {
   const { host, event } = config;
+  // Ảnh đại diện theo theme đang chọn; không có thì dùng ảnh mặc định trong config
+  const photo = THEMES.find((t) => t.key === theme)?.avatar || host.photo;
   return (
     <section id="info" className="section">
       <div className="section__head">
@@ -66,8 +69,8 @@ export default function Info({ guest }) {
       </div>
 
       <div className="glass about">
-        {host.photo ? (
-          <img className="about__photo" src={host.photo} alt={`Ảnh của ${host.name}`} />
+        {photo ? (
+          <img className="about__photo" src={photo} alt={`Ảnh của ${host.name}`} />
         ) : (
           <div className="about__photo about__photo--empty">
             Ảnh
