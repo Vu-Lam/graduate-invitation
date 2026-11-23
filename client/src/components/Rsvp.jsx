@@ -3,7 +3,7 @@ import Icon from './Icon.jsx';
 import Confetti from './Confetti.jsx';
 import { api } from '../api.js';
 
-const MAX = 500;
+const MAX = 5000;
 
 export default function Rsvp({ guest, onSaved }) {
   const saved = guest.rsvp;
