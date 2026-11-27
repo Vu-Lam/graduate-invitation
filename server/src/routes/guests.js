@@ -60,7 +60,7 @@ const rsvpSchema = z
   .object({
     status: z.enum(['yes', 'no'], { message: 'Bạn hãy chọn đi hoặc không đi.' }),
     reason: z.string().trim().max(500, 'Lý do tối đa 500 ký tự.').optional().default(''),
-    wish: z.string().trim().max(500, 'Lời chúc tối đa 500 ký tự.').optional().default(''),
+    wish: z.string().trim().max(5000, 'Lời chúc tối đa 5000 ký tự.').optional().default(''),
     contact: z.string().trim().min(1, 'Bạn vui lòng để lại thông tin liên lạc.').max(100, 'Thông tin liên lạc tối đa 100 ký tự.')
   })
   .superRefine((value, ctx) => {
