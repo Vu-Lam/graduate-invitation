@@ -15,7 +15,7 @@ const GuestSchema = new Schema(
     rsvp: {
       status: { type: String, enum: ['yes', 'no'] }, // chưa trả lời = undefined
       reason: { type: String, default: '', maxlength: 500 },
-      wish: { type: String, default: '', maxlength: 500 },
+      wish: { type: String, default: '', maxlength: 5000 },
       contact: { type: String, default: '', maxlength: 100 }, // phone or email
       respondedAt: { type: Date }
     },

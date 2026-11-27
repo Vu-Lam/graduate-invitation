@@ -35,7 +35,7 @@ app.use(
     }
   })
 );
-app.use(express.json({ limit: '10kb' }));
+app.use(express.json({ limit: '64kb' }));
 
 app.use(
   '/api',
@@ -56,8 +56,10 @@ if (fs.existsSync(clientDist)) {
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  console.error(err);
-  res.status(500).json({ error: 'Có lỗi xảy ra, bạn thử lại sau nhé.' });
+  const status = err.status >= 400 && err.status < 500 ? err.status : 500;
+  if (status === 500) console.error(err);
+  const message = status === 413 ? 'Nội dung quá dài, bạn rút gọn lại nhé.' : 'Có lỗi xảy ra, bạn thử lại sau nhé.';
+  res.status(status).json({ error: message });
 });
 
 const port = Number(process.env.PORT) || 3001;
