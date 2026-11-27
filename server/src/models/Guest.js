@@ -23,6 +23,15 @@ const GuestSchema = new Schema(
     // Lời chúc chỉ lên sổ lưu bút sau khi bạn duyệt
     wishVisible: { type: Boolean, default: false },
 
+    // Đánh dấu trong ngày lễ: đã chụp ảnh, đã gửi ảnh, đã tặng quà
+    checkin: {
+      photo: { type: Boolean, default: false },
+      photoSent: { type: Boolean, default: false },
+      gift: { type: Boolean, default: false },
+      note: { type: String, default: '', maxlength: 200 },
+      updatedAt: { type: Date }
+    },
+
     visits: { type: Number, default: 0 },
     lastVisitAt: { type: Date }
   },

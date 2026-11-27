@@ -163,28 +163,38 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+function adminGuest(g) {
+  return {
+    id: String(g._id),
+    slug: g.slug,
+    name: g.name,
+    honorific: g.honorific,
+    group: g.group,
+    rsvpStatus: g.rsvp?.status ?? null,
+    reason: g.rsvp?.reason ?? '',
+    contact: g.rsvp?.contact ?? '',
+    wish: g.rsvp?.wish ?? '',
+    wishVisible: Boolean(g.wishVisible),
+    checkin: {
+      photo: Boolean(g.checkin?.photo),
+      photoSent: Boolean(g.checkin?.photoSent),
+      gift: Boolean(g.checkin?.gift),
+      note: g.checkin?.note ?? ''
+    },
+    visits: g.visits,
+    lastVisitAt: g.lastVisitAt,
+    createdAt: g.createdAt
+  };
+}
+
 // Admin: Lấy danh sách tất cả khách
 router.get('/admin/guests', requireAdmin, async (req, res, next) => {
   try {
     const guests = await Guest.find()
-      .select('slug name honorific group rsvp.status rsvp.contact rsvp.wish wishVisible visits lastVisitAt createdAt')
+      .select('slug name honorific group rsvp wishVisible checkin visits lastVisitAt createdAt')
       .sort({ createdAt: -1 })
       .lean();
-    const items = guests.map((g) => ({
-      id: String(g._id),
-      slug: g.slug,
-      name: g.name,
-      honorific: g.honorific,
-      group: g.group,
-      rsvpStatus: g.rsvp?.status ?? null,
-      contact: g.rsvp?.contact ?? '',
-      wish: g.rsvp?.wish ?? '',
-      wishVisible: Boolean(g.wishVisible),
-      visits: g.visits,
-      lastVisitAt: g.lastVisitAt,
-      createdAt: g.createdAt
-    }));
-    return res.json({ items });
+    return res.json({ items: guests.map(adminGuest) });
   } catch (err) {
     return next(err);
   }
@@ -344,13 +354,7 @@ router.post('/admin/guests', requireAdmin, async (req, res, next) => {
     const guest = new Guest({ slug, name, honorific, group });
     await guest.save();
 
-    return res.status(201).json({
-      id: String(guest._id),
-      slug: guest.slug,
-      name: guest.name,
-      honorific: guest.honorific,
-      group: guest.group
-    });
+    return res.status(201).json(adminGuest(guest.toObject()));
   } catch (err) {
     return next(err);
   }
@@ -374,20 +378,7 @@ router.put('/admin/guests/:id', requireAdmin, async (req, res, next) => {
     const guest = await Guest.findByIdAndUpdate(req.params.id, parsed.data, { new: true }).lean();
     if (!guest) return res.status(404).json({ error: 'Không tìm thấy khách.' });
 
-    return res.json({
-      id: String(guest._id),
-      slug: guest.slug,
-      name: guest.name,
-      honorific: guest.honorific,
-      group: guest.group,
-      rsvpStatus: guest.rsvp?.status ?? null,
-      contact: guest.rsvp?.contact ?? '',
-      wish: guest.rsvp?.wish ?? '',
-      wishVisible: Boolean(guest.wishVisible),
-      visits: guest.visits,
-      lastVisitAt: guest.lastVisitAt,
-      createdAt: guest.createdAt
-    });
+    return res.json(adminGuest(guest));
   } catch (err) {
     return next(err);
   }
@@ -406,6 +397,30 @@ router.put('/admin/guests/:id/wish-visible', requireAdmin, async (req, res, next
     ).lean();
     if (!guest) return res.status(404).json({ error: 'Không tìm thấy khách.' });
     return res.json({ id: String(guest._id), wishVisible: Boolean(guest.wishVisible) });
+  } catch (err) {
+    return next(err);
+  }
+});
+
+// Admin: Đánh dấu trong ngày lễ (chụp ảnh / gửi ảnh / tặng quà / ghi chú)
+const checkinSchema = z
+  .object({
+    photo: z.boolean().optional(),
+    photoSent: z.boolean().optional(),
+    gift: z.boolean().optional(),
+    note: z.string().trim().max(200, 'Ghi chú tối đa 200 ký tự.').optional()
+  })
+  .refine((v) => Object.keys(v).length > 0, { message: 'Không có gì để cập nhật.' });
+
+router.put('/admin/guests/:id/checkin', requireAdmin, async (req, res, next) => {
+  try {
+    const parsed = checkinSchema.safeParse(req.body);
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0].message });
+    const $set = { 'checkin.updatedAt': new Date() };
+    for (const [k, v] of Object.entries(parsed.data)) $set[`checkin.${k}`] = v;
+    const guest = await Guest.findByIdAndUpdate(req.params.id, { $set }, { new: true }).lean();
+    if (!guest) return res.status(404).json({ error: 'Không tìm thấy khách.' });
+    return res.json(adminGuest(guest));
   } catch (err) {
     return next(err);
   }

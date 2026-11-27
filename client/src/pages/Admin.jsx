@@ -3,6 +3,7 @@ import { api } from '../api.js';
 import { config } from '../config.js';
 import AdminSchedules from '../components/AdminSchedules.jsx';
 import AdminHonorifics from '../components/AdminHonorifics.jsx';
+import AdminAttendance from '../components/AdminAttendance.jsx';
 
 const TOKEN_KEY = 'admin-token';
 
@@ -312,7 +313,7 @@ export default function Admin() {
     >
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '30px' }}>
-          <h1>{{ guests: 'Quản lý khách mời', schedules: 'Khung giờ theo nhóm', honorifics: 'Cách xưng hô' }[tab]}</h1>
+          <h1>{{ guests: 'Quản lý khách mời', attendance: 'Thống kê tham dự', schedules: 'Khung giờ theo nhóm', honorifics: 'Cách xưng hô' }[tab]}</h1>
           <div style={{ display: 'flex', gap: '10px' }}>
             <button
               onClick={() => loadGuests(token)}
@@ -347,9 +348,10 @@ export default function Admin() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '24px' }}>
           {[
             ['guests', 'Khách mời'],
+            ['attendance', 'Tham dự'],
             ['schedules', 'Khung giờ'],
             ['honorifics', 'Xưng hô']
           ].map(([key, label]) => (
@@ -372,7 +374,13 @@ export default function Admin() {
           ))}
         </div>
 
-        {tab === 'schedules' ? (
+        {tab === 'attendance' ? (
+          loading ? (
+            <div style={{ textAlign: 'center', padding: '40px' }}>Đang tải...</div>
+          ) : (
+            <AdminAttendance token={token} guests={guests} setGuests={setGuests} />
+          )
+        ) : tab === 'schedules' ? (
           <AdminSchedules token={token} />
         ) : tab === 'honorifics' ? (
           <AdminHonorifics token={token} />
